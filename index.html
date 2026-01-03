@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="home.png">
+    <title>TEMPOYAK: Edisi Juara (V5.6 Posisi Judul)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Quicksand:wght@600;700&family=Amiri:wght@700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+        :root { --gold: #ffd700; --red-jambi: #5d1916; --brown: #3e2723; }
+
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Quicksand', sans-serif; 
+            overflow: hidden; 
+            touch-action: none; 
+            user-select: none; 
+            background-color: #000; 
+            height: 100vh; width: 100vw; 
+        }
+
+        /* --- EFEK VISUAL --- */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 
+            10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-2deg); } 
+            20%, 80% { transform: translate3d(4px, 0, 0) rotate(2deg); } 
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0) rotate(-2deg); } 
+            40%, 60% { transform: translate3d(6px, 0, 0) rotate(2deg); } 
+        }
+
+        .pop-effect { animation: popSuccess 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popSuccess { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* LAYOUT UMUM */
+        .screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: none; flex-direction: column; align-items: center; 
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            box-sizing: border-box; /* Penting agar padding tidak menambah lebar */
+        }
+        .screen.active { display: flex; animation: fadeIn 0.6s; }
+
+        /* --- PERBAIKAN HALAMAN HOME --- */
+        #screen-home { 
+            background-image: url('bg_jambi.png'); 
+            background-position: center center; 
+            background-size: cover; 
+            justify-content: space-between; 
+            padding: 20px;
+        }
+
+        /* Area Kontrol Atas (Zoom & Sound) */
+        .home-top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end; /* Pojok Kanan */
+            gap: 15px;
+            padding-top: 10px;
+            padding-right: 10px;
+            z-index: 50;
+        }
+
+        /* Judul (Di Tengah/Agak Atas) */
+        .title-wrapper {
+            flex: 1; /* Mengisi ruang kosong agar judul terdorong ke tengah */
+            display: flex;
+            align-items: center; /* Vertikal tengah */
+            justify-content: center;
+        }
+        
+        .title-img { 
+            width: 90%;       /* Diperbaiki dari 300% menjadi 90% agar pas */
+            max-width: 500px; 
+            
+            /* --- INI BAGIAN YANG MENAIKKAN JUDUL --- */
+            margin-bottom: 15vh; /* Memberi ganjalan di bawah, sehingga judul naik ke atas */
+            
+            animation: float 3s infinite ease-in-out; 
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); 
+        }
+
+        /* Area Tombol Bawah (Mulai & Profil) */
+        .home-btn-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center; /* Posisi di tengah horizontal */
+            align-items: flex-end;   /* Posisi di bawah container */
+            gap: 30px;               /* Jarak antar tombol */
+            margin-bottom: 5vh;      /* Jarak dari tepi bawah layar */
+            width: 100%;
+            z-index: 10;
+        }
+
+        /* Perbaikan Tombol agar Proporsional */
+        .home-main-btn { 
+            width: 35vw; 
+            max-width: 220px; 
+            height: auto; /* Height auto agar tidak gepeng */
+            
+            cursor: pointer; 
+            transition: 0.2s; 
+            filter: drop-shadow(0 5px 5px #000); 
+            object-fit: contain; 
+        }
+        .home-main-btn:active { transform: scale(0.95); }
+        .home-main-btn:hover { transform: scale(1.1); filter: drop-shadow(0 0 15px var(--gold)); }
+
+        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+
+
+        /* --- LAYOUT GAME & PILIH KELAS --- */
+        #screen-select { background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('tari.png'); justify-content: center; }
+        
+        #screen-game { 
+            background: radial-gradient(circle at center, rgba(93, 25, 22, 0.85), rgba(44, 14, 12, 0.85)); 
+            justify-content: center;
+        }
+        
+        #game-bg-layer { 
+            position: absolute; width: 100%; height: 100%; 
+            background-image: url('bg_game.png'); 
+            background-size: cover; 
+            background-position: center;
+            opacity: 0.6; pointer-events: none; 
+        }
+
+        .select-title { width: 60%; max-width: 400px; margin-bottom: 30px; filter: drop-shadow(0 5px 5px black); }
+        .class-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 90%; max-width: 800px; }
+        .class-btn-img { width: 100%; cursor: pointer; transition: 0.2s; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.8)); }
+        .class-btn-img:active { transform: scale(0.9); }
+        .class-btn-img:hover { transform: scale(1.1); z-index:10; }
+        .back-text { margin-top: 30px; color: white; text-decoration: underline; cursor: pointer; font-weight: bold; text-shadow: 0 2px 2px black; }
+
+        /* HUD */
+        #top-bar { 
+            position: absolute; top: 65px; left: 20px; right: 20px; 
+            display: flex; justify-content: space-between; align-items: flex-start;
+            pointer-events: none; z-index: 10; 
+        }
+
+        .hud-panel { 
+            background: linear-gradient(180deg, rgba(93,64,55,0.95), rgba(62,39,35,0.95)); 
+            border: 2px solid var(--gold); border-radius: 12px; padding: 8px 15px; color: var(--gold); 
+            pointer-events: auto; display: flex; flex-direction: column; justify-content: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); width: auto; min-width: 80px;
+        }
+
+        #mission-panel { display: flex; gap: 8px; flex-wrap: nowrap; justify-content: center; }
+        
+        .mission-slot { 
+            width: 60px; height: 80px;
+            background: rgba(0,0,0,0.6); border: 2px solid #795548; border-radius: 8px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            transition: 0.3s; position: relative;
+        }
+        .mission-slot.done { 
+            background: linear-gradient(135deg, var(--gold), #ff8f00); 
+            border-color: white; color: #3e2723; transform: scale(1.1); 
+            box-shadow: 0 0 20px var(--gold); animation: popSuccess 0.5s;
+        }
+        .m-emoji { font-size: 32px; margin-bottom: 2px; }
+        .m-label { font-size: 9px; font-weight: bold; text-transform: uppercase; text-align: center; line-height: 1; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 2px; box-sizing: border-box; }
+
+        /* WORKSPACE & LIBRARY */
+        #workspace { width: 100%; height: 60vh; position: relative; z-index: 5; }
+        
+        #library { 
+            position: absolute; bottom: 0; width: 100%; height: 40vh; 
+            background: rgba(62, 39, 35, 0.75); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            border-top: 6px solid var(--gold); border-radius: 25px 25px 0 0; padding: 25px; box-sizing: border-box; 
+            display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 15px; 
+            overflow-y: auto; z-index: 20; box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* TOKEN */
+        .token { 
+            width: 85px; height: 85px; background: linear-gradient(145deg, #fff3e0, #ffcc80); 
+            border-radius: 15px; border: 2px solid #8d6e63; border-bottom: 5px solid #8d6e63;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3); 
+            user-select: none; touch-action: none; position: relative; transition: transform 0.1s;
+        }
+        .token:active { transform: scale(0.95); border-bottom-width: 2px; margin-top: 3px; }
+        .token.dragging { position: fixed !important; z-index: 9999 !important; transform: scale(1.15) rotate(-5deg); pointer-events: none; opacity: 0.95; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .token .emoji { font-size: 40px; line-height: 1.1; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+        .token .label { font-size: 10px; font-weight: 800; color: #3e2723; text-transform: uppercase; margin-top: 2px; text-align: center; width: 90%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+        .token[data-id="bismillah"] .emoji { font-size: 22px !important; line-height: 2.5 !important; margin-top: 5px; }
+        .token[data-id="jibril"] .emoji { font-size: 28px !important; line-height: 2.2 !important; margin-top: 5px; font-family: 'Amiri', serif; }
+
+        /* CONTROLS */
+        .control-bar { position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: center; gap: 20px; z-index: 100; pointer-events: none; }
+        .ctrl-btn { width: 60px; height: 60px; cursor: pointer; pointer-events: auto; transition: 0.2s; filter: drop-shadow(0 4px 5px rgba(0,0,0,0.5)); }
+        .ctrl-btn:hover { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--gold)); }
+        .ctrl-btn:active { transform: scale(0.9); }
+        .muted { filter: grayscale(100%); opacity: 0.7; }
+
+        /* MODALS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .popup-card { background: white; padding: 25px; width: 85%; max-width: 400px; border-radius: 20px; text-align: center; border: 4px solid var(--gold); animation: popSuccess 0.4s; box-shadow: 0 0 50px rgba(255, 215, 0, 0.3); }
+        .level-btn { display: block; width: 100%; margin: 10px 0; padding: 15px; background: linear-gradient(135deg, #5d1916, #3e2723); color: var(--gold); border: 2px solid var(--gold); border-radius: 10px; font-size: 16px; cursor: pointer; font-family: 'Cinzel', serif; transition:0.2s; text-transform: uppercase; font-weight: bold; }
+        .level-btn:hover { transform: scale(1.03); background: #3e1c1c; box-shadow: 0 0 15px var(--gold); }
+        .quiz-opt { padding: 15px; background: #f9f9f9; margin: 10px 0; border-radius: 10px; text-align: left; font-weight: bold; cursor: pointer; border: 2px solid #ddd; transition:0.2s; }
+        .quiz-opt:hover { border-color: var(--gold); background: #fff8e1; }
+        .quiz-opt.correct { background: #c8e6c9; border-color: green; }
+        .quiz-opt.wrong { background: #ffcdd2; border-color: red; }
+
+        #confetti-canvas { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 3000; }
+        @media (max-width: 600px) { .class-grid { gap: 15px; } .token { width: 75px; height: 75px; } .ctrl-btn { width: 50px; height: 50px; } }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div id="preloader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#2c0e0c; z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <img src="judul.png" style="width:150px; margin-bottom:20px; animation: popSuccess 1s infinite alternate;">
+        <div style="color:gold; font-family:'Cinzel'; letter-spacing:3px; font-size:14px;">MEMUAT ASET...</div>
+    </div>
+
+    <audio id="bgm" loop><source src="sound_bg.mp3" type="audio/mpeg"></audio>
+    <audio id="sfx-correct"><source src="benar.mp3" type="audio/mpeg"></audio>
+    <audio id="sfx-pop"><source src="pop.mp3" type="audio/mpeg"></audio>
+    <audio id="sfx-win"><source src="audio_akhir.mp3" type="audio/mpeg"></audio>
+    <audio id="sfx-wrong"><source src="pop.mp3" type="audio/mpeg"></audio>
+
+    <div id="screen-home" class="screen active">
+        <div class="home-top-bar">
+            <img src="zoom.png" class="ctrl-btn" onclick="toggleFullScreen()" title="Layar Penuh">
+            <img src="sound.png" class="ctrl-btn snd-btn" onclick="toggleSound()" title="Musik">
+        </div>
+
+        <div class="title-wrapper">
+            <img src="judul.png" class="title-img">
+        </div>
+
+        <div class="home-btn-container">
+            <img src="mulai.png" class="home-main-btn" onclick="showScreen('select')">
+            <img src="profil.png" class="home-main-btn" onclick="window.location.href='info.html'">
+        </div>
+    </div>
+
+    <div id="screen-select" class="screen">
+        <img src="pilihan_kelas.png" class="select-title">
+        <div class="class-grid">
+            <img src="kelas1.png" class="class-btn-img" onclick="openLevelSelect(1)">
+            <img src="kelas2.png" class="class-btn-img" onclick="openLevelSelect(2)">
+            <img src="kelas3.png" class="class-btn-img" onclick="openLevelSelect(3)">
+            <img src="kelas4.png" class="class-btn-img" onclick="openLevelSelect(4)">
+            <img src="kelas5.png" class="class-btn-img" onclick="openLevelSelect(5)">
+            <img src="kelas6.png" class="class-btn-img" onclick="openLevelSelect(6)">
+        </div>
+        <div class="back-text" onclick="showScreen('home')">&laquo; KEMBALI</div>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div id="game-bg-layer"></div>
+        <div id="top-bar">
+            <div class="hud-panel" style="width:auto; min-width:80px; text-align:center;">
+                <div style="font-weight:bold; font-size:16px;" id="lbl-kelas">KELAS 1</div>
+                <div style="font-size:10px; opacity:0.8;" id="lbl-level">LEVEL 1</div>
+            </div>
+            
+            <div class="hud-panel">
+                <div id="mission-panel"></div>
+            </div>
+        </div>
+
+        <div id="workspace"></div>
+        <div id="library"></div>
+        
+        <div class="control-bar">
+            <img src="zoom.png" class="ctrl-btn" onclick="toggleFullScreen()" title="Layar Penuh">
+            <img src="sound.png" class="ctrl-btn snd-btn" id="btn-sound" onclick="toggleSound()" title="Musik">
+            <img src="tong.png" class="ctrl-btn" onclick="clearWorkspace()" title="Bersihkan">
+            <img src="home.png" class="ctrl-btn" onclick="goHome()" title="Keluar">
+        </div>
+    </div>
+
+    <div id="modal-level" class="modal-overlay">
+        <div class="popup-card">
+            <h2 style="color:#5d1916; font-family:'Cinzel'; margin-bottom:20px;">PILIH TINGKATAN</h2>
+            <button class="level-btn" onclick="selectLevel(1)">LEVEL 1 (Gampang)</button>
+            <button class="level-btn" onclick="selectLevel(2)">LEVEL 2 (Biaso be)</button>
+            <button class="level-btn" onclick="selectLevel(3)">LEVEL 3 (Payah Dikit)</button>
+            <div onclick="document.getElementById('modal-level').style.display='none'" style="margin-top:15px; cursor:pointer; text-decoration:underline;">Batal</div>
+        </div>
+    </div>
+
+    <div id="modal-found" class="modal-overlay">
+        <div class="popup-card">
+            <h4 style="color:#888; margin:0;">ALHAMDULILLAH!</h4>
+            <div style="font-size:60px; margin:10px 0;" id="f-emoji">🎁</div>
+            <h2 id="f-title" style="color:#5d1916; margin:0; font-family:'Amiri';">JUDUL</h2>
+            <p id="f-msg" style="background:#f5f5f5; padding:10px; border-radius:10px;">Deskripsi...</p>
+            <button class="level-btn" onclick="closeFound()">LANJUTKAN</button>
+        </div>
+    </div>
+
+    <div id="modal-quiz" class="modal-overlay">
+        <div class="popup-card">
+            <h2 style="color:#5d1916; margin:0;">EVALUASI</h2>
+            <p id="q-text" style="font-weight:bold; margin:15px 0;">Pertanyaan?</p>
+            <div id="q-options"></div>
+            <small>Soal <span id="q-idx">1</span> dari 5</small>
+        </div>
+    </div>
+
+    <div id="modal-win" class="modal-overlay">
+        <div class="popup-card" style="border-color:gold;">
+            <div style="font-size:60px;">🏆</div>
+            <h2 style="color:#5d1916;">SELESAI!</h2>
+            <p>Kamu telah menyelesaikan level ini.</p>
+            <button class="level-btn" onclick="showScreen('select'); document.getElementById('modal-win').style.display='none'">MENU KELAS</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIG ---
+        let isMuted = false;
+        const BG_VOLUME_NORMAL = 0.4;
+        const BG_VOLUME_LOW = 0.1;
+        const SFX_VOLUME = 0.7;
+        const WIN_VOLUME = 0.6;
+
+        window.onload = () => {
+            setTimeout(() => { document.getElementById('preloader').style.display = 'none'; }, 1000);
+            
+            const bgm = document.getElementById('bgm');
+            if(bgm) bgm.volume = BG_VOLUME_NORMAL;
+
+            document.body.addEventListener('click', () => { 
+                if(!isMuted) bgm.play().catch(()=>{}); 
+            }, {once:true});
+        };
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-'+id).classList.add('active');
+        }
+        function goHome() { showScreen('home'); }
+
+        function toggleSound() {
+            isMuted = !isMuted;
+            const bgm = document.getElementById('bgm');
+            const btns = document.querySelectorAll('.snd-btn'); 
+            
+            if(isMuted) { 
+                bgm.pause(); 
+                btns.forEach(b => b.classList.add('muted'));
+            } 
+            else { 
+                bgm.volume = BG_VOLUME_NORMAL; 
+                bgm.play().catch(()=>{}); 
+                btns.forEach(b => b.classList.remove('muted'));
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
+
+        // --- AUDIO ENGINE ---
+        let activeSfxCount = 0;
+        function playSfx(id) { 
+            if(!isMuted) { 
+                const sfx = document.getElementById('sfx-'+id); 
+                const bgm = document.getElementById('bgm');
+                
+                if(sfx) {
+                    if(id === 'win') sfx.volume = WIN_VOLUME;
+                    else sfx.volume = SFX_VOLUME;
+
+                    bgm.volume = BG_VOLUME_LOW; 
+                    activeSfxCount++;
+
+                    sfx.currentTime = 0; 
+                    sfx.play().catch(()=>{}); 
+
+                    sfx.onended = () => {
+                        activeSfxCount--;
+                        if(activeSfxCount <= 0) {
+                            activeSfxCount = 0;
+                            if(!isMuted) bgm.volume = BG_VOLUME_NORMAL;
+                        }
+                    };
+                }
+            } 
+        }
+
+        // --- CONFETTI EFFECT ---
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let confetti = [];
+
+        function fireConfetti() {
+            for(let i=0; i<100; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    color: `hsl(${Math.random()*360}, 100%, 50%)`,
+                    size: Math.random() * 10 + 5,
+                    speed: Math.random() * 5 + 2,
+                    angle: Math.random() * 360
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            let active = false;
+            confetti.forEach((p, i) => {
+                p.y += p.speed;
+                p.angle += 2;
+                ctx.fillStyle = p.color;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle * Math.PI / 180);
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                ctx.restore();
+                if(p.y < canvas.height) active = true;
+                else confetti.splice(i, 1);
+            });
+            if(active) requestAnimationFrame(animateConfetti);
+        }
+
+        // --- DATABASE ---
+        const itemsDB = {
+            "air":{e:"💧",n:"Air"}, "debu":{e:"🌪️",n:"Debu"}, "niat":{e:"💭",n:"Niat"}, "lisan":{e:"👄",n:"Lisan"}, "hati":{e:"❤️",n:"Hati"}, "harta":{e:"💰",n:"Harta"},
+            "baca":{e:"📖",n:"Baca"}, "kitab":{e:"📚",n:"Kitab"}, "guru":{e:"👩‍🏫",n:"Guru"}, "sopan":{e:"🙇",n:"Sopan"}, "waktu":{e:"⏰",n:"Waktu"}, "kiblat":{e:"🕋",n:"Kiblat"},
+            "orangtua":{e:"👵",n:"Ortu"}, "taat":{e:"🙏",n:"Taat"}, "angsa":{e:"🦢",n:"Angsa"}, "batanghari":{e:"🌊",n:"S.Batanghari"}, "durian":{e:"🍈",n:"Durian"}, "ikan":{e:"🐟",n:"Ikan"},
+            "lapar":{e:"🤤",n:"Lapar"}, "nabi":{e:"👳",n:"Nabi"}, "mekkah":{e:"🏜️",n:"Mekkah"}, "kabah":{e:"🕋",n:"Ka'bah"}, "saudara":{e:"🤝",n:"Teman"}, "maaf":{e:"💚",n:"Maaf"},
+            "percaya":{e:"✨",n:"Percaya"}, "amal":{e:"🤲",n:"Amal"}, "hidung":{e:"👃",n:"Hidung"}, "muka":{e:"😊",n:"Wajah"}, "tangan":{e:"✋",n:"Tangan"}, 
+            "kaki":{e:"🦶",n:"Kaki"}, "masjid":{e:"🕌",n:"Masjid"}, "adzan":{e:"📢",n:"Adzan"}, "jambi":{e:"🗺️",n:"Jambi"}, "candi":{e:"🛕",n:"Candi"}, "jembatan":{e:"🌉",n:"Jembatan"},
+            "batik":{e:"👕",n:"Batik"}, "madinah":{e:"🌴",n:"Madinah"}, "hijrah":{e:"🐫",n:"Hijrah"}, "nun_mati":{e:"نْ",n:"Nun Mati"}, "mim_mati":{e:"مْ",n:"Mim Mati"}, "salah":{e:"❌",n:"Salah"},
+            "wudhu":{e:"🚿",n:"Wudhu"}, "istinsyak":{e:"👃",n:"Istinsyak"}, "basuh_muka":{e:"🧖",n:"Basuh Muka"}, "tayamum":{e:"✋",n:"Tayamum"}, "syahadat":{e:"☝️",n:"Syahadat"},
+            "quran":{e:"📖",n:"Al-Qur'an"}, "adab":{e:"🙇",n:"Adab"}, "sholat":{e:"🧎",n:"Sholat"}, "sholat_jamaah":{e:"👥",n:"Jamaah"}, "masjid_agung":{e:"🕌",n:"Al-Falah"},
+            "birrul":{e:"💐",n:"Birrul Walidain"}, "angso_duo":{e:"🦢",n:"Angso Duo"}, "tempoyak":{e:"🥣",n:"Tempoyak"}, "gentala":{e:"🌉",n:"Gentala Arasy"}, "candi_muaro":{e:"🛕",n:"Candi Muaro"}, "batik_jambi":{e:"👘",n:"Batik Jambi"},
+            "zakat":{e:"🎁",n:"Zakat"}, "puasa":{e:"🤐",n:"Puasa"}, "muhammad":{e:"🌹",n:"Muhammad SAW"}, "haji":{e:"🕋",n:"Haji"}, "silaturahmi":{e:"🫂",n:"Silaturahmi"}, "rukun_iman":{e:"💎",n:"Rukun Iman"}, 
+            "iklas":{e:"💖",n:"Ikhlas"}, "idgham":{e:"〰️",n:"Idgham"}, "ikm":{e:"🏫",n:"Kurikulum"}, "dengung":{e:"〰️",n:"Dengung"}, "samar":{e:"🌫️",n:"Samar"}, "pantul":{e:"🔊",n:"Pantul"}, 
+            "dosa":{e:"🔥",n:"Dosa"}, "pahala":{e:"🌟",n:"Pahala"}, "kafir":{e:"🙈",n:"Ingkar"}, "musibah":{e:"⛈️",n:"Musibah"}, "beda":{e:"≠",n:"Beda"}, "damai":{e:"☮️",n:"Damai"},
+            "istinja":{e:"🧻",n:"Istinja"}, "ikhfa":{e:"🌫️",n:"Ikhfa"}, "qalqalah":{e:"🔊",n:"Qalqalah"}, "malaikat":{e:"👼",n:"Malaikat"}, "wahyu":{e:"📜",n:"Wahyu"}, "halal":{e:"✅",n:"Halal"}, 
+            "haram":{e:"🚫",n:"Haram"}, "surga":{e:"🏞️",n:"Surga"}, "neraka":{e:"🌋",n:"Neraka"}, "walisongo":{e:"👳",n:"Walisongo"}, "toleransi":{e:"🤝",n:"Toleransi"}, "sabar":{e:"🧘",n:"Sabar"}, 
+            "syukur":{e:"🤲",n:"Syukur"}, "bismillah":{e:"﷽",n:"Bismillah"}, "babi":{e:"🐷",n:"Babi"}, "makanan":{e:"🍲",n:"Makanan"}, "jawa":{e:"🏝️",n:"Jawa"}, "dakwah":{e:"📢",n:"Dakwah"},
+            "jibril":{e:"جبريل",n:"Jibril"}, "cahaya":{e:"✨",n:"Cahaya"}, "allah":{e:"ﷲ",n:"Allah"}, "nikmat":{e:"🍎",n:"Nikmat"}, "hamdalah":{e:"🤲",n:"Alhamdulillah"}, "batu":{e:"🪨",n:"Batu"}
+        };
+
+        const recipesDB = [
+            { id: "istinja", in: ["air","batu"], diff:1, levels:[1,2], msg: "Membersihkan kotoran." },
+            { id: "wudhu", in: ["air","niat"], diff:1, levels:[1,2], msg: "Syarat sah sholat." },
+            { id: "istinsyak", in: ["air","hidung"], diff:1, levels:[1,2], msg: "Memasukkan air ke hidung." },
+            { id: "basuh_muka", in: ["air","muka"], diff:1, levels:[1], msg: "Rukun wudhu yang wajib." },
+            { id: "syahadat", in: ["lisan","hati"], diff:1, levels:[1,6], msg: "Persaksian keimanan." },
+            { id: "adab", in: ["guru","sopan"], diff:1, levels:[1,2,3], msg: "Menghormati guru." },
+            { id: "angso_duo", in: ["angsa","batanghari"], diff:1, levels:[3,4,5], msg: "Legenda Jambi." },
+            { id: "malaikat", in: ["cahaya","allah"], diff:1, levels:[1,2,3,4], msg: "Diciptakan dari cahaya." },
+            { id: "syukur", in: ["nikmat","hamdalah"], diff:1, levels:[1,2,3], msg: "Terima kasih pada Allah." },
+            { id: "sholat", in: ["wudhu","kiblat"], diff:2, levels:[2,3], msg: "Tiang agama." },
+            { id: "sholat_jamaah", in: ["niat","masjid"], diff:2, levels:[2,3], msg: "Pahala 27 derajat." },
+            { id: "birrul", in: ["orangtua","taat"], diff:2, levels:[2,3], msg: "Berbakti pada orang tua." },
+            { id: "tempoyak", in: ["durian","ikan"], diff:2, levels:[3,4,5], msg: "Makanan khas Jambi." },
+            { id: "batik_jambi", in: ["batik","jambi"], diff:2, levels:[4,5,6], msg: "Kain khas daerah." },
+            { id: "gentala", in: ["jembatan","jambi"], diff:2, levels:[4,5,6], msg: "Ikon seberang kota Jambi." },
+            { id: "candi_muaro", in: ["candi","jambi"], diff:2, levels:[4,5,6], msg: "Situs sejarah terluas." },
+            { id: "wahyu", in: ["jibril","nabi"], diff:2, levels:[3,4,5], msg: "Pesan Allah." },
+            { id: "halal", in: ["makanan","bismillah"], diff:2, levels:[2,3,4,5,6], msg: "Boleh dimakan." },
+            { id: "haram", in: ["makanan","babi"], diff:2, levels:[2,3,4,5,6], msg: "Dilarang dimakan." },
+            { id: "sabar", in: ["musibah","hati"], diff:2, levels:[3,4,5], msg: "Tabah menghadapi ujian." },
+            { id: "tayamum", in: ["debu","niat"], diff:2, levels:[1,4,5], msg: "Pengganti wudhu." },
+            { id: "muhammad", in: ["nabi","mekkah"], diff:3, levels:[4,5], msg: "Nabi terakhir panutan kita." },
+            { id: "madinah", in: ["hijrah","mekkah"], diff:3, levels:[4,5], msg: "Kota tujuan hijrah Nabi." },
+            { id: "haji", in: ["kabah","harta"], diff:3, levels:[5,6], msg: "Rukun Islam ke-5." },
+            { id: "zakat", in: ["harta","niat"], diff:3, levels:[4,5,6], msg: "Pembersih harta." },
+            { id: "idgham", in: ["nun_mati","dengung"], diff:3, levels:[4,5,6], msg: "Tajwid: Melebur bunyi." },
+            { id: "ikhfa", in: ["nun_mati","samar"], diff:3, levels:[4,5,6], msg: "Tajwid: Menyamarkan bunyi." },
+            { id: "qalqalah", in: ["baca","pantul"], diff:3, levels:[4,5,6], msg: "Tajwid: Memantulkan bunyi." },
+            { id: "iklas", in: ["hati","amal"], diff:3, levels:[5,6], msg: "Beramal semata karena Allah." },
+            { id: "silaturahmi", in: ["saudara","maaf"], diff:3, levels:[5,6], msg: "Menyambung persaudaraan." },
+            { id: "masjid_agung", in: ["masjid","jambi"], diff:3, levels:[3,4,5], msg: "Masjid Seribu Tiang." },
+            { id: "neraka", in: ["dosa","kafir"], diff:3, levels:[5,6], msg: "Balasan ingkar." },
+            { id: "surga", in: ["pahala","taat"], diff:3, levels:[5,6], msg: "Balasan iman." },
+            { id: "walisongo", in: ["jawa","dakwah"], diff:3, levels:[4,5,6], msg: "Penyebar Islam di Jawa." },
+            { id: "toleransi", in: ["beda","damai"], diff:3, levels:[4,5,6], msg: "Menghargai perbedaan." }
+        ];
+
+        const quizBank = {
+            1: [{q:"Tuhan kita adalah...", o:["Malaikat","Nabi","Allah"], a:2}, {q:"Nabi Muhammad adalah...", o:["Utusan Allah","Malaikat","Tuhan"], a:0}, {q:"Kitab suci umat Islam?", o:["Koran","Majalah","Al-Qur'an"], a:2}, {q:"Rukun Islam ada...", o:["3","5","6"], a:1}, {q:"Rukun Iman ada...", o:["5","6","7"], a:1}, {q:"Sholat sehari semalam ada... waktu", o:["3","4","5"], a:2}, {q:"Sebelum makan kita membaca...", o:["Hamdalah","Basmalah","Takbir"], a:1}, {q:"Kepada orang tua kita harus...", o:["Marah","Patuh","Diam"], a:1}, {q:"Tempat ibadah orang Islam...", o:["Gereja","Pura","Masjid"], a:2}, {q:"Pencipta alam semesta adalah...", o:["Allah","Manusia","Jin"], a:0}, {q:"Jika berbuat salah ucapkan...", o:["Terima Kasih","Maaf","Salam"], a:1}, {q:"Kebersihan sebagian dari...", o:["Iman","Sehat","Kaya"], a:0}],
+            2: [{q:"Sholat Subuh berapa rakaat?", o:["2","3","4"], a:0}, {q:"Membasuh muka adalah rukun...", o:["Sholat","Wudhu","Haji"], a:1}, {q:"Gerakan rukuk dilakukan dengan...", o:["Berdiri","Membungkuk","Duduk"], a:1}, {q:"Surah Al-Fatihah artinya...", o:["Pembukaan","Penutup","Inti"], a:0}, {q:"Anak sholeh selalu mendoakan...", o:["Diri sendiri","Orang Tua","Teman"], a:1}, {q:"Al-Asmaul Husna artinya...", o:["Nama Nabi","Nama Allah Baik","Nama Malaikat"], a:1}, {q:"Allah Maha Pengasih disebut...", o:["Ar-Rahman","Ar-Rahim","Al-Malik"], a:0}, {q:"Nabi yang bisa bicara dengan hewan...", o:["Musa","Sulaiman","Isa"], a:1}, {q:"Sholat Maghrib ada... rakaat", o:["2","3","4"], a:1}, {q:"Berbohong adalah perbuatan...", o:["Terpuji","Tercela","Biasa"], a:1}, {q:"Malaikat yang menyampaikan wahyu...", o:["Jibril","Mikail","Israfil"], a:0}],
+            3: [{q:"Allah Maha Esa artinya...", o:["Allah Satu","Allah Dua","Allah Tiga"], a:0}, {q:"Puasa dilakukan di bulan...", o:["Syawal","Ramadhan","Haji"], a:1}, {q:"Nabi yang membuat kapal besar...", o:["Adam","Nuh","Musa"], a:1}, {q:"Sungai terpanjang di Jambi...", o:["Musi","Batanghari","Kapuas"], a:1}, {q:"Sikap percaya kemampuan diri...", o:["Sombong","Percaya Diri","Malu"], a:1}, {q:"Surah Al-Kautsar artinya...", o:["Nikmat Banyak","Gajah","Waktu"], a:0}, {q:"Sholat Jumat dilaksanakan pada waktu...", o:["Dzuhur","Ashar","Subuh"], a:0}, {q:"Ikon kota Jambi berupa jembatan...", o:["Ampera","Gentala Arasy","Barelang"], a:1}, {q:"Sifat wajib bagi Allah ada...", o:["10","20","99"], a:1}, {q:"Lawan dari sifat jujur adalah...", o:["Dusta","Amanah","Fatonah"], a:0}, {q:"Zakat fitrah dikeluarkan berupa...", o:["Uang/Beras","Baju","Emas"], a:0}],
+            4: [{q:"Nabi hijrah dari Mekkah ke...", o:["Mesir","Madinah","Yaman"], a:1}, {q:"Gelar Al-Amin artinya...", o:["Cerdas","Dapat Dipercaya","Kuat"], a:1}, {q:"Malaikat pencabut nyawa...", o:["Jibril","Izrail","Israfil"], a:1}, {q:"Hukum bacaan Nun Mati/Tanwin ada...", o:["4","5","6"], a:0}, {q:"Saling menghargai disebut...", o:["Toleransi","Egois","Acuh"], a:0}, {q:"Wali Songo menyebarkan Islam di...", o:["Sumatera","Jawa","Sulawesi"], a:1}, {q:"Nabi Ayyub diuji dengan penyakit...", o:["Kulit","Mata","Perut"], a:0}, {q:"Rumah adat Jambi adalah...", o:["Gadang","Kajang Lako","Limas"], a:1}, {q:"Idgham Bighunnah artinya...", o:["Melebur dengung","Jelas","Samar"], a:0}, {q:"Nabi terakhir adalah...", o:["Isa","Musa","Muhammad SAW"], a:2}, {q:"Membayar zakat hukumnya...", o:["Sunnah","Wajib","Makruh"], a:1}],
+            5: [{q:"Surah Al-Ma'un bercerita tentang...", o:["Anak Yatim","Orang Kafir","Malaikat"], a:0}, {q:"Kitab Injil diturunkan kepada...", o:["Nabi Musa","Nabi Isa","Nabi Daud"], a:1}, {q:"Hari Kiamat disebut juga...", o:["Yaumul Akhir","Yaumul Milad","Yaumul Awal"], a:0}, {q:"Masjid Seribu Tiang ada di...", o:["Palembang","Padang","Jambi"], a:2}, {q:"Puasa Senin Kamis hukumnya...", o:["Wajib","Sunnah","Haram"], a:1}, {q:"Khalifah pertama setelah Nabi wafat...", o:["Abu Bakar","Umar","Ali"], a:0}, {q:"Qalqalah artinya...", o:["Memantul","Mendengung","Samar"], a:0}, {q:"Nabi yang dibakar api namun selamat...", o:["Musa","Ibrahim","Yusuf"], a:1}, {q:"Makanan khas Jambi dari durian...", o:["Gudeg","Tempoyak","Rendang"], a:1}, {q:"Sikap sederhana adalah...", o:["Pelit","Boros","Tidak berlebihan"], a:2}],
+            6: [{q:"Percaya Qada dan Qadar rukun iman ke...", o:["4","5","6"], a:2}, {q:"Surah Al-Kafirun mengajarkan...", o:["Perang","Toleransi","Dagang"], a:1}, {q:"Senjata tradisional Jambi...", o:["Rencong","Keris Siginjai","Kujang"], a:1}, {q:"Hukum memakan bangkai ikan...", o:["Haram","Halal","Makruh"], a:1}, {q:"Malaikat peniup sangkakala...", o:["Jibril","Mikail","Israfil"], a:2}, {q:"Surah Al-Maidah ayat 3 turun saat...", o:["Haji Wada","Perang Badar","Isra Miraj"], a:0}, {q:"Arti At-Tin adalah...", o:["Buah Zaitun","Buah Tin","Waktu Dhuha"], a:1}, {q:"Berinfak sebaiknya dengan harta...", o:["Sisa","Halal & Baik","Haram"], a:1}, {q:"Candi Muaro Jambi adalah peninggalan...", o:["Islam","Buddha","Hindu"], a:1}, {q:"Menahan amarah adalah perbuatan...", o:["Terpuji","Tercela","Sia-sia"], a:0}]
+        };
+
+        // --- LOGIC UTAMA ---
+        let currentClass=1, currentLevel=1, targetCount=3;
+        let activeRecipes=[], foundRecipes=[], quizQueue=[], quizIdx=0;
+        let dragItem = null, dragOffsetX = 0, dragOffsetY = 0;
+
+        function openLevelSelect(c) { currentClass=c; document.getElementById('modal-level').style.display='flex'; }
+        
+        function selectLevel(l) {
+            currentLevel = l;
+            document.getElementById('modal-level').style.display='none';
+            targetCount = (l==1)?3 : (l==2)?4 : 5;
+            startGame();
+        }
+
+        function startGame() {
+            let pool = recipesDB.filter(r => r.levels.includes(currentClass));
+            pool.sort((a,b) => {
+                let distA = Math.abs(a.diff - currentLevel);
+                let distB = Math.abs(b.diff - currentLevel);
+                return distA - distB + (Math.random() - 0.5); 
+            });
+
+            if(pool.length < targetCount) pool = recipesDB.sort(()=>0.5-Math.random()); 
+            activeRecipes = pool.slice(0, targetCount);
+
+            let qPool = quizBank[currentClass] || quizBank[1];
+            qPool.sort(() => 0.5 - Math.random());
+            quizQueue = qPool.slice(0, 5);
+            while(quizQueue.length < 5) quizQueue = quizQueue.concat(qPool).slice(0,5);
+
+            document.getElementById('lbl-kelas').innerText = "KELAS " + currentClass;
+            document.getElementById('lbl-level').innerText = "LEVEL " + currentLevel;
+            document.getElementById('mission-panel').innerHTML = "";
+            document.getElementById('workspace').innerHTML = "";
+            document.getElementById('library').innerHTML = "";
+            foundRecipes = [];
+
+            activeRecipes.forEach(r => {
+                const div = document.createElement('div'); div.className='mission-slot'; div.id='m-'+r.id;
+                div.innerHTML = `<div class="m-emoji">?</div><div class="m-label">${itemsDB[r.id].n}</div>`;
+                document.getElementById('mission-panel').appendChild(div);
+            });
+
+            let ingredients = new Set();
+            activeRecipes.forEach(r => r.in.forEach(i => ingredients.add(i)));
+            if(currentLevel >= 2) ingredients.add("salah");
+            if(currentLevel >= 3) { ingredients.add("waktu"); ingredients.add("lapar"); }
+
+            Array.from(ingredients).sort(()=>0.5-Math.random()).forEach(k => {
+                if(itemsDB[k]) spawnLibraryItem(k);
+            });
+
+            showScreen('game');
+        }
+
+        function spawnLibraryItem(k) {
+            const el = document.createElement('div'); el.className = 'token';
+            el.innerHTML = `<div class="emoji">${itemsDB[k].e}</div><div class="label">${itemsDB[k].n}</div>`;
+            el.dataset.id = k;
+            
+            const startDragFromLib = (e) => {
+                e.preventDefault(); e.stopPropagation();
+                createDragItem(k, e);
+            };
+            el.addEventListener('mousedown', startDragFromLib);
+            el.addEventListener('touchstart', startDragFromLib, {passive:false});
+            document.getElementById('library').appendChild(el);
+        }
+
+        function createDragItem(k, e) {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const token = document.createElement('div');
+            token.className = 'token dragging';
+            token.dataset.id = k;
+            token.innerHTML = `<div class="emoji">${itemsDB[k].e}</div><div class="label">${itemsDB[k].n}</div>`;
+            document.body.appendChild(token);
+
+            dragOffsetX = 42; dragOffsetY = 42; 
+            dragItem = token;
+            moveDragItem(clientX, clientY);
+
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove, {passive:false});
+            document.addEventListener('mouseup', onEnd);
+            document.addEventListener('touchend', onEnd);
+        }
+
+        function spawnInWorkspace(k, x, y) {
+            const token = document.createElement('div');
+            token.className = 'token'; 
+            token.style.position = 'absolute'; 
+            token.dataset.id = k;
+            token.style.left = x + 'px';
+            token.style.top = y + 'px';
+            token.innerHTML = `<div class="emoji">${itemsDB[k].e}</div><div class="label">${itemsDB[k].n}</div>`;
+            
+            const startDragWs = (e) => {
+                e.preventDefault(); e.stopPropagation();
+                const rect = token.getBoundingClientRect();
+                const cX = e.touches ? e.touches[0].clientX : e.clientX;
+                const cY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                token.remove(); 
+                
+                const dragTok = document.createElement('div');
+                dragTok.className = 'token dragging';
+                dragTok.dataset.id = k;
+                dragTok.innerHTML = token.innerHTML;
+                document.body.appendChild(dragTok);
+                
+                dragOffsetX = cX - rect.left;
+                dragOffsetY = cY - rect.top;
+                dragItem = dragTok;
+                moveDragItem(cX, cY);
+
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('touchmove', onMove, {passive:false});
+                document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchend', onEnd);
+            };
+
+            token.addEventListener('mousedown', startDragWs);
+            token.addEventListener('touchstart', startDragWs, {passive:false});
+            
+            document.getElementById('workspace').appendChild(token);
+            playSfx('pop');
+        }
+
+        function onMove(e) {
+            if(!dragItem) return;
+            e.preventDefault();
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            moveDragItem(cx, cy);
+        }
+
+        function moveDragItem(x, y) {
+            dragItem.style.left = (x - dragOffsetX) + 'px';
+            dragItem.style.top = (y - dragOffsetY) + 'px';
+        }
+
+        function onEnd(e) {
+            if(!dragItem) return;
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('mouseup', onEnd);
+            document.removeEventListener('touchend', onEnd);
+
+            const rect = dragItem.getBoundingClientRect();
+            const wsRect = document.getElementById('workspace').getBoundingClientRect();
+
+            if (rect.top < wsRect.bottom && rect.bottom > wsRect.top && 
+                rect.left < wsRect.right && rect.right > wsRect.left) {
+                
+                const finalX = rect.left - wsRect.left;
+                const finalY = rect.top - wsRect.top;
+                const k = dragItem.dataset.id;
+                
+                dragItem.remove(); 
+                
+                const merged = checkMerge(k, finalX, finalY, rect);
+                if(!merged) spawnInWorkspace(k, finalX, finalY);
+                
+            } else {
+                dragItem.remove();
+            }
+            dragItem = null;
+        }
+
+        function checkMerge(droppedId, x, y, droppedRect) {
+            const wsItems = document.getElementById('workspace').children;
+            for(let item of wsItems) {
+                const itemRect = item.getBoundingClientRect();
+                if (droppedRect.left < itemRect.right && droppedRect.right > itemRect.left &&
+                    droppedRect.top < itemRect.bottom && droppedRect.bottom > itemRect.top) {
+                    
+                    const targetId = item.dataset.id;
+                    const match = activeRecipes.find(r => r.in.includes(droppedId) && r.in.includes(targetId) && droppedId !== targetId);
+                    
+                    if(match) {
+                        const cX = (x + parseFloat(item.style.left)) / 2;
+                        const cY = (y + parseFloat(item.style.top)) / 2;
+                        item.remove();
+                        playSfx('correct');
+                        fireConfetti();
+                        
+                        if(!foundRecipes.includes(match.id)) {
+                            foundRecipes.push(match.id);
+                            const slot = document.getElementById('m-'+match.id);
+                            slot.classList.add('done');
+                            slot.querySelector('.m-emoji').innerText = itemsDB[match.id].e;
+                            
+                            document.getElementById('f-emoji').innerText = itemsDB[match.id].e;
+                            document.getElementById('f-title').innerText = itemsDB[match.id].n;
+                            document.getElementById('f-msg').innerText = match.msg;
+                            document.getElementById('modal-found').style.display = 'flex';
+                        } else {
+                            spawnInWorkspace(match.id, cX, cY);
+                        }
+                        return true;
+                    } else {
+                        const item1 = document.querySelector(`.token[data-id="${item.dataset.id}"]`);
+                        if(item1) { item1.classList.add('shake'); setTimeout(()=>item1.classList.remove('shake'), 500); }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function closeFound() {
+            document.getElementById('modal-found').style.display='none';
+            if(foundRecipes.length >= targetCount) setTimeout(startQuiz, 500);
+        }
+
+        function clearWorkspace() { document.getElementById('workspace').innerHTML = ''; playSfx('pop'); }
+
+        function startQuiz() { quizIdx=0; document.getElementById('modal-quiz').style.display='flex'; renderQuestion(); }
+        function renderQuestion() {
+            if(quizIdx >= quizQueue.length) {
+                document.getElementById('modal-quiz').style.display='none';
+                fireConfetti();
+                playSfx('win');
+                document.getElementById('modal-win').style.display='flex';
+                return;
+            }
+            const d = quizQueue[quizIdx];
+            document.getElementById('q-idx').innerText = (quizIdx+1);
+            document.getElementById('q-text').innerText = d.q;
+            const div = document.getElementById('q-options'); div.innerHTML='';
+            d.o.forEach((txt, i) => {
+                const b = document.createElement('div'); b.className='quiz-opt'; b.innerText=txt;
+                b.onclick = () => {
+                    if(i===d.a) { b.classList.add('correct'); playSfx('correct'); setTimeout(()=>{quizIdx++; renderQuestion();},1000); }
+                    else { b.classList.add('wrong'); playSfx('wrong'); }
+                };
+                div.appendChild(b);
+            });
+        }
+    </script>
+</body>
+</html>

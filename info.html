@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="home.png">
+    
+    <title>TEMPOYAK - Info Media</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Quicksand:wght@600;700&family=Amiri:wght@700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+        :root {
+            --red-jambi: #5d1916;
+            --gold: #ffd700;
+            --dark-brown: #2c0e0c;
+            --cream: #fff8e1;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Quicksand', sans-serif;
+            background-color: #000;
+            color: var(--dark-brown);
+            height: 100vh; width: 100vw;
+            overflow: hidden; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('bg_jambi.png'); 
+            background-size: cover;
+            background-position: center;
+        }
+
+        .overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(44, 14, 12, 0.85);
+            z-index: 1;
+        }
+
+        .dashboard-container {
+            position: relative; z-index: 10;
+            width: 95%; height: 90%;
+            background: var(--cream);
+            border-radius: 20px;
+            display: flex;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border: 4px solid var(--gold);
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--red-jambi);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 0;
+            border-right: 3px solid var(--gold);
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            text-align: center;
+            color: var(--gold);
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+        .logo-area h1 { font-family: 'Cinzel', serif; margin: 0; font-size: 32px; letter-spacing: 2px; text-shadow: 2px 2px 0 #000; }
+        .logo-area span { font-size: 9px; letter-spacing: 1px; color: white; display: block; margin-top: 5px; opacity: 0.9; font-style: italic; }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            padding: 15px 25px;
+            text-align: left;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .menu-btn:hover { color: white; background: rgba(255,255,255,0.1); }
+        .menu-btn.active {
+            color: var(--red-jambi);
+            background: var(--gold);
+            border-left: 5px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .back-btn {
+            margin-top: auto; 
+            background: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .back-btn:hover { background: #000; color: var(--gold); }
+
+        /* KONTEN */
+        .content-area {
+            flex: 1;
+            padding: 40px;
+            position: relative;
+            background-image: repeating-linear-gradient(45deg, rgba(93, 25, 22, 0.03) 0px, rgba(93, 25, 22, 0.03) 1px, transparent 1px, transparent 10px);
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none; 
+            flex-direction: column;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .tab-content.active { display: flex; }
+
+        @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+        h2.tab-title {
+            font-family: 'Cinzel', serif;
+            color: var(--red-jambi);
+            border-bottom: 3px solid var(--gold);
+            padding-bottom: 10px;
+            margin-top: 0;
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        /* --- PROFIL --- */
+        .profile-card {
+            display: flex; gap: 30px; align-items: center;
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #ddd;
+        }
+        .profile-img-box {
+            width: 150px; height: 180px; background: #eee;
+            border: 4px solid var(--red-jambi); border-radius: 10px;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .profile-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-info h3 { margin: 0 0 5px 0; color: var(--red-jambi); font-size: 24px; }
+        .profile-info p { margin: 6px 0; font-size: 15px; color: #555; display: flex; align-items: center; gap: 10px; }
+        .badge-text { color: var(--red-jambi); font-weight: bold; }
+
+        .social-links { display: flex; gap: 10px; margin-top: 15px; }
+        .social-btn {
+            width: 35px; height: 35px; background: var(--red-jambi); color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            text-decoration: none; transition: 0.3s;
+        }
+        .social-btn:hover { background: var(--gold); color: var(--red-jambi); transform: translateY(-3px); }
+
+        /* --- CARA BERMAIN --- */
+        .howto-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .step-box { background: white; padding: 20px; border-radius: 15px; text-align: center; border: 2px solid #eee; }
+        .step-icon { width: 50px; height: 50px; background: var(--red-jambi); color: var(--gold); border-radius: 50%; font-size: 24px; font-weight: bold; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px; }
+
+        /* --- MATERI & REFERENSI --- */
+        .cp-container {
+            display: grid; gap: 15px;
+        }
+        .cp-box {
+            background: rgba(255, 255, 255, 0.9);
+            border-left: 5px solid var(--red-jambi);
+            padding: 15px; 
+            color: #444; font-size: 14px; line-height: 1.5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .cp-title { font-weight: bold; color: var(--red-jambi); display: block; margin-bottom: 5px; }
+
+        .materi-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .materi-item {
+            background: var(--red-jambi); color: white; padding: 15px;
+            border-radius: 10px; border: 2px solid var(--gold);
+        }
+        .materi-item h4 { margin-top: 0; color: var(--gold); border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 5px; }
+        .materi-item ul { padding-left: 20px; margin-bottom: 0; font-size: 13px; line-height: 1.6; }
+
+        .ref-section { margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px; }
+        .ref-section h4 { margin: 0 0 10px 0; color: var(--red-jambi); }
+        .ref-list { font-size: 13px; color: #555; line-height: 1.6; }
+
+        .btn-download {
+            display: inline-block; margin: 20px 0;
+            background: #333; color: var(--gold);
+            padding: 12px 25px; text-decoration: none;
+            border-radius: 25px; font-weight: bold; font-size: 14px;
+            transition: 0.3s; border: 2px solid var(--gold);
+        }
+        .btn-download:hover { background: var(--red-jambi); color: white; }
+
+        /* --- GLOSARIUM --- */
+        .glossary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .gloss-item { background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid #ddd; border-left: 4px solid var(--gold); transition: 0.2s; }
+        .gloss-item:hover { transform: translateX(5px); border-left-color: var(--red-jambi); }
+        .gloss-term { color: var(--red-jambi); font-weight: bold; display: block; margin-bottom: 5px; font-family: 'Amiri', serif; font-size: 18px; }
+        .gloss-def { font-size: 13px; color: #555; line-height: 1.4; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .dashboard-container { flex-direction: column; width: 100%; height: 100%; border-radius: 0; border: none; }
+            .sidebar { width: 100%; height: auto; flex-direction: row; padding: 10px; border-right: none; border-bottom: 3px solid var(--gold); overflow-x: auto; }
+            .logo-area { display: none; }
+            .menu-btn { padding: 10px; font-size: 12px; white-space: nowrap; flex: 0 0 auto; }
+            .back-btn { display: none; } 
+            .content-area { padding: 20px; }
+            .profile-card { flex-direction: column; text-align: center; }
+            .howto-grid, .materi-list, .glossary-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay"></div>
+
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="logo-area">
+                <h1>TEMPOYAK</h1>
+                <span>Temukan Makna dari Pola Yang Kita susun</span>
+            </div>
+            
+            <button class="menu-btn active" onclick="openTab('profil', this)">
+                <i class="fas fa-user-tie"></i> Profil Pengembang
+            </button>
+            <button class="menu-btn" onclick="openTab('howto', this)">
+                <i class="fas fa-gamepad"></i> Cara Bermain
+            </button>
+            <button class="menu-btn" onclick="openTab('materi', this)">
+                <i class="fas fa-book-open"></i> Kurikulum & Referensi
+            </button>
+            <button class="menu-btn" onclick="openTab('glosarium', this)">
+                <i class="fas fa-spell-check"></i> Glosarium
+            </button>
+
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-sign-out-alt"></i> KEMBALI KE GAME
+            </a>
+        </div>
+
+        <div class="content-area">
+
+            <div id="tab-profil" class="tab-content active">
+                <h2 class="tab-title"><i class="fas fa-id-card"></i> TENTANG PENGEMBANG</h2>
+                
+                <div class="profile-card">
+                    <div class="profile-img-box">
+                        <img src="kemas.png" alt="Kemas Sudirman" onerror="this.src='https://via.placeholder.com/150x180?text=FOTO'">
+                    </div>
+                    <div class="profile-info">
+                        <h3>Kemas Sudirman, S.Pd.I</h3>
+                        <p><i class="fas fa-chalkboard-teacher"></i> Guru Pendidikan Agama Islam & Budi Pekerti</p>
+                        <p><i class="fas fa-medal" style="color:#d4af37;"></i> <span class="badge-text">Duta Teknologi Kemendikdasmen</span></p>
+                        <p><i class="fas fa-laptop-code" style="color:#d4af37;"></i> <span class="badge-text">Guru Pejuang Digital</span></p>
+                        <p><i class="fas fa-school"></i> SD Negeri 51 Setiris, Muaro Jambi</p>
+
+                        <div class="social-links">
+                            <a href="https://www.cikgudirman.com" target="_blank" class="social-btn" title="Blog"><i class="fas fa-globe"></i></a>
+                            <a href="https://www.facebook.com/cikgu.dirman" target="_blank" class="social-btn" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="https://www.instagram.com/cikgu_dirman" target="_blank" class="social-btn" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="https://www.tiktok.com/@cikgu.dirman" target="_blank" class="social-btn" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        </div>
+                        
+                        <p style="font-style:italic; font-size:14px; color:#777; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                            "Inovasi tiada henti untuk pendidikan agama yang lebih membumi."
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-howto" class="tab-content">
+                <h2 class="tab-title"><i class="fas fa-question-circle"></i> PETUNJUK PERMAINAN</h2>
+                <p><strong>TEMPOYAK</strong> adalah game edukasi berbasis <em>Discovery Learning</em> dengan metode <em>Drag & Drop</em> untuk mengasah logika siswa dalam menghubungkan konsep PAI dengan kearifan lokal.</p>
+                
+                <div class="howto-grid">
+                    <div class="step-box">
+                        <div class="step-icon">1</div>
+                        <h3>AMBIL</h3>
+                        <p>Pilih dan tarik (drag) ikon bahan dari laci perpustakaan di bawah layar.</p>
+                    </div>
+                    <div class="step-box">
+                        <div class="step-icon">2</div>
+                        <h3>GABUNG</h3>
+                        <p>Gabungkan dua ikon yang memiliki hubungan sebab-akibat atau syarat-rukun.</p>
+                    </div>
+                    <div class="step-box">
+                        <div class="step-icon">3</div>
+                        <h3>TEMUKAN</h3>
+                        <p>Jika benar, ikon baru (Hikmah) akan muncul. Kumpulkan semua target!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-materi" class="tab-content">
+                <h2 class="tab-title"><i class="fas fa-book-reader"></i> KURIKULUM & MATERI</h2>
+                
+                <div class="cp-container">
+                    <div class="cp-box">
+                        <span class="cp-title">Capaian Pembelajaran Fase A (Kelas 1-2)</span>
+                        Peserta didik mengenal rukun iman, rukun islam, dan tata cara bersuci (thaharah) secara sederhana serta terbiasa berdoa sebelum melakukan kegiatan.
+                    </div>
+                    <div class="cp-box">
+                        <span class="cp-title">Capaian Pembelajaran Fase B (Kelas 3-4)</span>
+                        Peserta didik memahami kisah keteladanan nabi, tata cara sholat, puasa, serta mampu membaca Al-Qur'an dengan hukum tajwid dasar.
+                    </div>
+                    <div class="cp-box">
+                        <span class="cp-title">Capaian Pembelajaran Fase C (Kelas 5-6)</span>
+                        Peserta didik memahami makna zakat, haji, sejarah perkembangan Islam, serta menerapkan perilaku terpuji dan toleransi dalam keberagaman.
+                    </div>
+                </div>
+
+                <div class="materi-list">
+                    <div class="materi-item">
+                        <h4>LEVEL 1 (GAMPANG)</h4>
+                        <ul>
+                            <li><strong>Fiqih:</strong> Thaharah (Wudhu, Istinja, Tayamum).</li>
+                            <li><strong>Aqidah:</strong> Syahadat & Konsep Malaikat.</li>
+                            <li><strong>Muatan Lokal:</strong> Legenda Angso Duo.</li>
+                        </ul>
+                    </div>
+                    <div class="materi-item" style="background:#3e2723;">
+                        <h4>LEVEL 2 (BIASO BE)</h4>
+                        <ul>
+                            <li><strong>Ibadah:</strong> Sholat Fardhu & Berjamaah.</li>
+                            <li><strong>Akhlak:</strong> Birrul Walidain & Sabar.</li>
+                            <li><strong>Budaya:</strong> Kuliner (Tempoyak) & Landmark Jambi.</li>
+                        </ul>
+                    </div>
+                    <div class="materi-item" style="background:#1a0b0a;">
+                        <h4>LEVEL 3 (PAYAH DIKIT)</h4>
+                        <ul>
+                            <li><strong>Tajwid:</strong> Hukum Nun Mati (Idgham, Ikhfa, Qalqalah).</li>
+                            <li><strong>Sejarah:</strong> Hijrah Nabi & Walisongo.</li>
+                            <li><strong>Hukum:</strong> Zakat, Haji, Halal & Haram.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="ref-section">
+                    <h4><i class="fas fa-bookmark"></i> Referensi Materi</h4>
+                    <ul class="ref-list">
+                        <li>Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi. (2021). <em>Buku Panduan Guru & Siswa Pendidikan Agama Islam dan Budi Pekerti SD</em>. Jakarta: Pusat Kurikulum dan Perbukuan.</li>
+                        <li>Dinas Kebudayaan dan Pariwisata Provinsi Jambi. (2018). <em>Ensiklopedia Sejarah dan Budaya Jambi</em>. Jambi.</li>
+                        <li>Direktorat Jenderal Pendidikan Islam. (2019). <em>Modul Fiqih Ibadah untuk Madrasah Ibtidaiyah</em>. Jakarta: Kemenag RI.</li>
+                    </ul>
+                </div>
+
+                <a href="modul_ajar.pdf" target="_blank" class="btn-download">
+                    <i class="fas fa-file-download"></i> UNDUH MODUL AJAR (RPP)
+                </a>
+            </div>
+
+            <div id="tab-glosarium" class="tab-content">
+                <h2 class="tab-title"><i class="fas fa-spell-check"></i> GLOSARIUM</h2>
+                <div class="glossary-grid">
+                    <div class="gloss-item">
+                        <span class="gloss-term">Tempoyak</span>
+                        <span class="gloss-def">Secara harfiah adalah makanan khas Jambi dari durian fermentasi. Dalam game ini merupakan akronim: <em>"Temukan Makna dari Pola Yang Kita susun"</em>.</span>
+                    </div>
+                    <div class="gloss-item">
+                        <span class="gloss-term">Thaharah</span>
+                        <span class="gloss-def">Bersuci dari hadas dan najis untuk mensahkan ibadah (Wudhu, Tayamum, Istinja).</span>
+                    </div>
+                    <div class="gloss-item">
+                        <span class="gloss-term">Angso Duo</span>
+                        <span class="gloss-def">Legenda lokal tentang sepasang angsa yang menuntun Putri Pinang Masak menemukan lokasi Kota Jambi.</span>
+                    </div>
+                    <div class="gloss-item">
+                        <span class="gloss-term">Idgham</span>
+                        <span class="gloss-def">Hukum tajwid yang berarti meleburkan atau memasukkan bunyi huruf satu ke huruf berikutnya.</span>
+                    </div>
+                    <div class="gloss-item">
+                        <span class="gloss-term">Birrul Walidain</span>
+                        <span class="gloss-def">Perilaku berbakti dan berbuat baik kepada kedua orang tua.</span>
+                    </div>
+                    <div class="gloss-item">
+                        <span class="gloss-term">Gentala Arasy</span>
+                        <span class="gloss-def">Ikon wisata Jambi berupa menara jam dan museum sejarah Islam di Seberang Kota Jambi.</span>
+                    </div>
+                    <div class="gloss-item">
+                        <span class="gloss-term">Istinsyak</span>
+                        <span class="gloss-def">Salah satu sunnah wudhu, yaitu menghirup air ke dalam hidung lalu mengeluarkannya.</span>
+                    </div>
+                    <div class="gloss-item">
+                        <span class="gloss-term">Candi Muaro Jambi</span>
+                        <span class="gloss-def">Kawasan percandian agama Buddha terluas di Asia Tenggara yang terletak di Kabupaten Muaro Jambi.</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function openTab(tabName, btnElement) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(t => t.classList.remove('active'));
+            const btns = document.querySelectorAll('.menu-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            if(btnElement) btnElement.classList.add('active');
+        }
+        window.onload = function() {
+            if(window.location.hash === '#howto') {
+                const howtoBtn = document.querySelectorAll('.menu-btn')[1];
+                openTab('howto', howtoBtn);
+            }
+        }
+    </script>
+
+</body>
+</html>
